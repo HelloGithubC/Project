@@ -85,7 +85,7 @@ class Methods(object):
             while abs(M_c-M_c_need)>error_M_c:
                 cls.error_judge=False
                 point1=(L_s,M_c)
-                point2=(L_s+steps[1],cls.cal_ML_simple(ST,L_s+steps[1])[0])
+                point2=(L_s+L_s*steps[1],cls.cal_ML_simple(ST,L_s+L_s*steps[1])[0])
                 k=cls.grad(point1,point2)
                 if k==0:
                     raise ZeroDivisionError('k is zero.')

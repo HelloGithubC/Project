@@ -4,15 +4,15 @@ from calculator import Methods
 
 if __name__=='__main__':
     me=Methods()
-    me.con.set_M_p(6.00150753768844)
-    L_s=1.04275883779695
-    ST_test=np.linspace(1e-7,3e-6,100)
-    L_c=np.ones(100)
+    me.con.set_M_p(5.04)
+    ST=0.0
+    L_s_test=np.linspace(1000,20000,1000)
+    m=np.ones(1000)
     index=0
-    for i in iter(ST_test):
-        L_c[index]=me.cal_ML_simple(i,L_s)[1]
+    for i in iter(L_s_test):
+        m[index]=me.cal_ML_simple(ST,i)[0]
         index+=1
     
     plt.figure(dpi=100)
-    plt.plot(ST_test,L_c)
+    plt.plot(L_s_test,m)
     plt.show()

@@ -11,7 +11,7 @@ from calculator import Calculator
 
 if __name__=='__main__':
     cal=Calculator()
-    arange=np.linspace(5.06,12,50)
+    arange=np.linspace(5.07,12,200) #5.07 is the min value could calculate
     cal.cal_M_range(arange)
     cal.creat_t(arange,False)
     plt.figure(dpi=100)
