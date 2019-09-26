@@ -11,9 +11,9 @@ import warnings
 from scipy.integrate import odeint
 from openpyxl import Workbook,load_workbook
 
-class ToAdjust(Exception):
-    def __init__(self):
-        Exception.__init__(self,'None')
+class LOutOfRangeError(Exception):
+    def __init__(self,message):
+        Exception.__init__(self,message)
 
 #Can not stop.
 class Methods(object):
@@ -32,9 +32,9 @@ class Methods(object):
     @classmethod
     def ode_fun(cls,Z,r,c_P,c_T,c_M,others,ST):
         P,T,M,G,DG,L=Z
-        if L<=-0.5:
+        if L<-1000:
             cls.L_test=L
-            raise ToAdjust()
+            raise LOutOfRangeError('L<-1000')
         g,alpha,beta,Lambda,R_B=others
 
         dP=c_P*M*P/(T*r**2)
@@ -80,9 +80,8 @@ class Methods(object):
     @classmethod
     def cal_L_safe(cls,ST,L_s):
         try:
-            warnings.simplefilter('error')
             L=cls.cal_ML_simple(ST,L_s)[1]
-        except:
+        except LOutOfRangeError:
             ST=cls.find_safe_point(ST,L_s)
             L=cls.cal_ML_simple(ST,L_s)[1]
         finally:
@@ -138,37 +137,15 @@ class Methods(object):
     def find_safe_point(cls,ST_init,L_s):
         L=L_s
         ST=ST_init
-        ST_store=0
-        judge=False
         if ST<0:
             ST=-ST
         while True:
             try:
-                warnings.simplefilter('error')
                 L_c=cls.cal_ML_simple(ST,L)[1]
-            except:
-                if judge:
-                    ST=ST-ST_store
-                    break
+            except LOutOfRangeError:
                 ST/=10
-                ST_store=ST
             else:
-                ST+=ST_store
-                judge=True
-        ST_left=ST
-        ST_right=ST+ST_store
-        while abs(L_c)>0.003:
-            ST=(ST_left+ST_right)/2
-            try:
-                warnings.simplefilter('error')
-                L_c=cls.cal_ML_simple(ST,L)[1]
-            except:
-                ST_right=ST
-                L_c=-10 #set a value to continue the loop
-                continue
-            else:
-                ST_left=ST
-                continue
+                break
         return ST
     
 class Calculator(object):

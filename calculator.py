@@ -124,6 +124,7 @@ class Methods(object):
                 ST/=10
             else:
                 break
+        return ST
 
 class Calculator(object):
     """Use to cal the deeper var."""
