@@ -1,0 +1,42 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jun  5 21:20:25 2019
+
+@author: 文明研究员
+"""
+""" @classmethod
+    def find_L_M_old(cls, targets, inits, steps, errors):
+    """
+    #The order in targets is [0(L_c),M], in inits is [ST,L_s], in steps and errors is [deltaL_c, deltaM]
+        """ST,L_s=inits
+        L_c_need,M_need=targets
+
+        while abs(cls.cal_ML_simple(ST,L_s)[1]-L_c_need)>errors[0] or abs(cls.cal_ML_simple(ST,L_s)[0]-M_need)>errors[1]:
+                
+                M_0,L_0=cls.cal_ML_simple(ST,L_s)
+                M_1,L_1=cls.cal_ML_simple(ST+steps[0],L_s)
+                M_2,L_2=cls.cal_ML_simple(ST,L_s+steps[1])
+                M_L=[[ST,L_s,L_0,M_0],[ST+steps[0],L_s,L_1,M_1],[ST,L_s+steps[1],L_2,M_2]]
+                Jacobi=cls.grad(M_L)
+                if np.linalg.det(Jacobi)==0:
+                    raise ZeroDivisionError('Error: The value of Jacobi is zero')
+                    return None
+                vect=np.array([-L_0,M_need-M_0])
+
+                dST,dL=np.linalg.solve(Jacobi,vect)
+                ST+=dST
+                L_s+=dL
+        return ST,L_s
+"""
+
+ @classmethod
+    def grad_old(cls,points):
+        """Every point in points has four elements: ST, L_s, L_c, M."""
+        points=np.array(points)
+        delta_ST=points[1,0]-points[0,0]
+        delta_L_s=points[2,1]-points[0,1]
+        patial1=(points[1,2]-points[0,2])/delta_ST    #\frac{\patial L_c}{\patial ST}
+        patial2=(points[2,2]-points[0,2])/delta_L_s    #\frac{\patial L_c}{\patial L_s}
+        patial3=(points[1,3]-points[0,3])/delta_ST    #\frac{\patial M}{\patial ST}
+        patial4=(points[2,3]-points[0,3])/delta_L_s    #\frac{\patial M}{\patial L_s}
+        return np.mat([[patial1,patial2],[patial3,patial4]])
