@@ -1,5 +1,6 @@
 from const import Const
 import numpy as np
+import matplotlib.pyplot as plt
 import warnings
 from scipy.integrate import odeint
 from numba import jit,jitclass
@@ -16,7 +17,6 @@ class Methods(object):
     T=[]
     M=[]
     L=[]
-    sigma=None
     L_store=0
     error_judge=False
 
@@ -38,6 +38,25 @@ class Methods(object):
         return [dP,dT,dM,dL]
 
     @classmethod
+    def ode_fun_B(cls,Z,r,c_P,c_T,c_M,others,ST):
+        P,T,M,G,DG,L=Z
+        if L<-1000:
+            raise LOutOfRangeError('L<-1000')
+        g,alpha,beta,Lambda,R_B=others
+
+        dP=c_P*M*P/(T*r**2)
+        dT=min(c_T*1e24*abs(L)*P**(alpha+1)*T**(beta-4)/M,g)*(T*dP/P)
+        dM=c_M*r**2*P/T
+        dG=DG
+        ddG=6*G/r**2+((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/T**2)*dT)*dG
+        dL=Lambda*7.15e-5*(dG**2+G**2/r**2)/(cls.sigma(P,T)*R_B)
+        if dT==g*(T*dP/P):
+            dL+=1e-24*cls.con.M_e*cls.con.T_0*dM*ST
+        else:
+            dL+=0
+        return [dP,dT,dM,dG,ddG,dL]
+
+    @classmethod
     def cal_ML_simple(cls,ST,L_s):
         c_P,c_T,c_M=cls.con.cal_const()
         g,alpha,beta=cls.con.g_ad,cls.con.alpha,cls.con.beta
@@ -51,12 +70,34 @@ class Methods(object):
         P,T,M,L=result[:,0],result[:,1],result[:,2],result[:,3]
         cls.P,cls.T,cls.M,cls.L=P,T,M,L
         cls.r=r
-        sigma=cls.con.sigma_1*T**(3./4.)*P**(-1./2.)*np.exp(
-        -cls.con.sigma_2/T)
-        cls.sigma=sigma
 
         return M[-1],L[-1]
 
+    @classmethod
+    def cal_ML_simple_B(cls,ST,L_s,B=False):
+        c_P,c_T,c_M=cls.con.cal_const()
+        g,alpha,beta=cls.con.g_ad,cls.con.alpha,cls.con.beta
+        R_in,R_out=cls.con.R_p,cls.con.R_out
+        num=800
+
+        r=np.linspace(1,R_in/R_out,num)
+        if B:
+            initial=(1.,1.,cls.con.M_p,1e-12,1e-15,L_s)
+        else:
+            initial=(1.,1.,cls.con.M_p,0.0,0.0,L_s)
+        others=(g,alpha,beta,cls.con.Lambda,cls.con.R_B)
+        cls.test2=[]
+        result=odeint(cls.ode_fun,initial,r,args=(c_P,c_T,c_M,others,ST))
+        P,T,M,g,dg,L=result[:,0],result[:,1],result[:,2],result[:,3],result[:,4],result[:,5]
+        cls.P,cls.T,cls.M,cls.L=P,T,M,L
+        cls.r,cls.g=r,g
+        cls.dg=dg
+        return M[-1],L[-1]
+
+    @classmethod
+    def sigma(cls,P,T):
+        return cls.con.sigma_1*T**(3./4)*P**(-1./2)*np.exp(-cls.con.sigma_2/T)
+          
     @classmethod
     def cal_L_safe(cls,ST,L_s):
         try:
@@ -119,7 +160,7 @@ class Methods(object):
             ST=-ST
         while True:
             try:
-                L_c=cls.cal_ML_simple(ST,L)[1]
+                cls.cal_ML_simple(ST,L)
             except LOutOfRangeError:
                 ST/=10
             else:
@@ -140,14 +181,14 @@ class Calculator(object):
         self.t=[]
         self.me=Methods()
     def cal_M_range(self,arange):
-        inital=[0.0,2.0]
+        initial=[0.0,2.0]
         for i in range(len(arange)):
             m=arange[i]
             if m<5.1:
-                inital=[0.0,50.0]
+                initial=[0.0,50.0]
             self.M_p.append(m)
             self.me.con.set_M_p(m)
-            self.ST.append(self.me.find_L_M([5.0,0],[0,2],[1e-8,1e-6],[1e-5,3e-3])[0][0])
+            self.ST.append(self.me.find_L_M([5.0,0],initial,[1e-8,1e-6],[1e-5,3e-3])[0][0])
             self.P.append(self.me.P)
             self.T.append(self.me.T)
             rho=[]
@@ -172,6 +213,26 @@ class Calculator(object):
             delta_2=(1/P_2+1/P_1)*(P_2-P_1)
             dt=n_0*(delta_1+delta_2)/((ST_1+ST_2)*self.me.con.Myr)
             self.t.append(self.t[i]+dt)
+
+    def creat_data(self,arange,data_filename='Data.xlsx',plot_filename='fig.png'):
+        #arange=np.linspace(5.07,12,200) #5.07 is the min value could calculate
+        self.cal_M_range(arange)
+        self.creat_t(arange,False)
+        plt.figure(dpi=100)
+        plt.plot(self.t,arange,label=r'$M_{p}-t$')
+        plt.xlabel('t/Myr')
+        plt.ylabel(r'$M_{p}$')
+        #plt.show()
+        if type(data_filename) is bool or type(plot_filename) is bool:
+            if type(data_filename) is bool:
+                if data_filename:
+                    self.write_excel(arange,data_filename)
+            if type(plot_filename) is bool:
+                if plot_filename:
+                    plt.savefig(plot_filename)
+        else:
+            plt.savefig(plot_filename)
+            self.write_excel(arange,data_filename)
         
     def write_excel(self,arange,filename='Data.xlsx'):
         wb=Workbook()

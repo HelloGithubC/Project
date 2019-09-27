@@ -141,7 +141,7 @@ class Methods(object):
             ST=-ST
         while True:
             try:
-                L_c=cls.cal_ML_simple(ST,L)[1]
+                cls.cal_ML_simple(ST,L)
             except LOutOfRangeError:
                 ST/=10
             else:
