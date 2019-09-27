@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import warnings
 from scipy.integrate import odeint
-from numba import jit,jitclass
 from openpyxl import Workbook,load_workbook
 
 class LOutOfRangeError(Exception):
@@ -40,8 +39,8 @@ class Methods(object):
     @classmethod
     def ode_fun_B(cls,Z,r,c_P,c_T,c_M,others,ST):
         P,T,M,G,DG,L=Z
-        if L<-1000:
-            raise LOutOfRangeError('L<-1000')
+        #if L<-1000:
+            #raise LOutOfRangeError('L<-1000')
         g,alpha,beta,Lambda,R_B=others
 
         dP=c_P*M*P/(T*r**2)
@@ -74,7 +73,7 @@ class Methods(object):
         return M[-1],L[-1]
 
     @classmethod
-    def cal_ML_simple_B(cls,ST,L_s,B=False):
+    def cal_ML_simple_B(cls,ST,L_s,B=False,G=1e-12):
         c_P,c_T,c_M=cls.con.cal_const()
         g,alpha,beta=cls.con.g_ad,cls.con.alpha,cls.con.beta
         R_in,R_out=cls.con.R_p,cls.con.R_out
@@ -82,17 +81,17 @@ class Methods(object):
 
         r=np.linspace(1,R_in/R_out,num)
         if B:
-            initial=(1.,1.,cls.con.M_p,1e-12,1e-15,L_s)
+            initial=(1.,1.,cls.con.M_p,G,1e-15,L_s)
         else:
             initial=(1.,1.,cls.con.M_p,0.0,0.0,L_s)
         others=(g,alpha,beta,cls.con.Lambda,cls.con.R_B)
         cls.test2=[]
-        result=odeint(cls.ode_fun,initial,r,args=(c_P,c_T,c_M,others,ST))
-        P,T,M,g,dg,L=result[:,0],result[:,1],result[:,2],result[:,3],result[:,4],result[:,5]
+        result=odeint(cls.ode_fun_B,initial,r,args=(c_P,c_T,c_M,others,ST))
+        P,T,M,G,dg,L=result[:,0],result[:,1],result[:,2],result[:,3],result[:,4],result[:,5]
         cls.P,cls.T,cls.M,cls.L=P,T,M,L
-        cls.r,cls.g=r,g
+        cls.r,cls.g=r,G
         cls.dg=dg
-        return M[-1],L[-1]
+        return M[-1],L[-1],G[-1]
 
     @classmethod
     def sigma(cls,P,T):
