@@ -34,6 +34,10 @@ class Const:
 		self.sigma_2=(4.35*0.5)/(self.T_0*8.617e-5)
 		self.k_P=self.P_0/1e6
 
+		self.Lambda=1
+
+		self.g_in=181940659586.26697 # Use calculator.cal_g_in to get it.
+
 	def cal_const(self):
 		self.c_M=4*self.pi*self.rho_0*self.R_out**3/self.M_e
 		self.c_T=3*self.k_0*self.P_0/(
