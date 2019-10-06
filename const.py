@@ -36,7 +36,7 @@ class Const:
 
 		self.Lambda=1
 
-		self.g_in=181940659586.26697 # Use calculator.cal_g_in to get it.
+		self.g_in=183870671770695.2 # When ST = 0.20143836115164995, L_s = 13888.2056137455 and g=1e-9. Use calculator.cal_g_in to get it.
 
 	def cal_const(self):
 		self.c_M=4*self.pi*self.rho_0*self.R_out**3/self.M_e

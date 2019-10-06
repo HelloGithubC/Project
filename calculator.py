@@ -16,6 +16,7 @@ class Methods(object):
     T=[]
     M=[]
     L=[]
+    g=[]
     L_store=0
     error_judge=False
 
