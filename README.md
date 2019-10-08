@@ -44,7 +44,7 @@ change_const: 辅助函数，直接修改Methods方法附带的Const类
 
 find_safe_point: 之前因为求解过程中L的值比较敏感所设置的“机器学习”函数，如今用处不大
 
-#### Calculator.py
+##### Calculator
 
 cal_M_range: 给定一个M_p的范围，得到该范围内每个切片的结构情况，其中的ST数据可以用来进行时间演化方面的计算。尚未考虑磁场。
 
