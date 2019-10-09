@@ -42,11 +42,11 @@ if __name__ == "__main__":
     ST_max=cal.ST[order]
     L_s=cal.L_init[order]
     ST_test=np.linspace(0,ST_max,100)
-    dG_test=np.linspace(0,1e-7,100)
+    dG_test=np.linspace(0.0,3.3480e-9,100)
     g_in=np.ones(len(dG_test))
     for i in range(len(dG_test)):
-        g_in[i]=cal.me.cal_ML_simple_B(ST_max/2,L_s,True,1e-9,dG_test[i])[2]
+        g_in[i]=cal.me.cal_ML_simple_B(ST_max*9/10,L_s,True,1e-9,dG_test[i])[2]
     
 
-    creat_plot_2D(dG_test,g_in,0.0,scatter=result)
+    creat_plot_2D(dG_test,g_in,0.0)
 
