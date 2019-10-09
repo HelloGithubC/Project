@@ -74,7 +74,7 @@ class Methods(object):
         return M[-1],L[-1]
 
     @classmethod
-    def cal_ML_simple_B(cls,ST,L_s,B=False,G=1e-12):
+    def cal_ML_simple_B(cls,ST,L_s,B=False,G=1e-12,dG=1e-15):
         c_P,c_T,c_M=cls.con.cal_const()
         g,alpha,beta=cls.con.g_ad,cls.con.alpha,cls.con.beta
         R_in,R_out=cls.con.R_p,cls.con.R_out
@@ -82,7 +82,7 @@ class Methods(object):
 
         r=np.linspace(1,R_in/R_out,num)
         if B:
-            initial=(1.,1.,cls.con.M_p,G,1e-15,L_s)
+            initial=(1.,1.,cls.con.M_p,G,dG,L_s)
         else:
             initial=(1.,1.,cls.con.M_p,0.0,0.0,L_s)
         others=(g,alpha,beta,cls.con.Lambda,cls.con.R_B)

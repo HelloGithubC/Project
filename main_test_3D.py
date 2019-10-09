@@ -45,11 +45,15 @@ if __name__ == "__main__":
     ST_max=cal.ST[order]
     L_s=cal.L_init[order]
     ST_test=np.linspace(0,ST_max,100)
-    g_out_test=np.linspace(0,1e-9,100)
+    g_out=0.0
+    DG_test=np.linspace(0,1e-9,100)
     result=np.ones((100,100,2))
-    X,Y=np.meshgrid(ST_test,g_out_test)
-    for i in range(X.shape[0]):
-        for j in range(X.shape[1]):
-            result[i,j]=cal.me.cal_ML_simple_B(X[i,j],L_s,True,Y[i,j])[1:3]
-    creat_plot_3D(X,Y,result[:,:,0],0.0)
-    creat_plot_3D(X,Y,result[:,:,1],cal.me.con.g_in)
+    X,Y=np.meshgrid(ST_test,DG_test)
+#    for i in range(X.shape[0]):
+#       for j in range(X.shape[1]):
+#           result[i,j]=cal.me.cal_ML_simple_B(X[i,j],L_s,True,Y[i,j])[1:3]
+    
+    new_func=np.vectorize(cal.me.cal_ML_simple_B,excluded=['L_s','B','G'])
+    result=new_func(X,L_s,True,g_out,Y)[2]
+    creat_plot_3D(X,Y,result,0.0)
+    
