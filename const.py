@@ -26,7 +26,7 @@ class Const:
 		#R_B=4e10*a**(1/2)*M_p
 		self.R_B=self.G*self.M_p*self.M_e/self.c_0**2
 		#R_out=min(R_H,R_B)
-		self.R_out=self.R_B
+		self.R_out=min(self.R_B,self.R_H)
 		self.P_0=self.rho_0*self.R*self.T_0/self.mu
 		#calculate sigma
 		self.sigma_1=9e9*906.4*(self.T_0/1002)**(5./4.)*(self.T_0/1500)**(
