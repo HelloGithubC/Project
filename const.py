@@ -49,4 +49,4 @@ class Const:
 		self.M_p=M_p
 		self.R_H=self.a*2e11*self.M_p**(1/3)
 		self.R_B=self.G*self.M_p*self.M_e/self.c_0**2
-		self.R_out=self.R_B
+		self.R_out=min(self.R_B,self.R_H)

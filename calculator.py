@@ -18,21 +18,25 @@ class Methods(object):
     L=[]
     g=[]
     L_store=0
-    error_judge=False
+    RCB_judge=False
+    RCB=0.0
 
     @classmethod
     def ode_fun(cls,Z,r,c_P,c_T,c_M,others,ST):
         P,T,M,L=Z
         g,alpha,beta=others
-        if L<-1000 and cls.error_judge:
-            raise LOutOfRangeError('L<-1000')
         dP=c_P*M*P/(T*r**2)
         dT=min(c_T*1e24*abs(L)*P**(alpha+1)*T**(beta-4)/M,g)*(T*dP/P)
 
         dM=c_M*r**2*P/T
 
         if dT==g*(T*dP/P):
-            dL=1e-24*cls.con.M_e*cls.con.T_0*dM*ST
+            if cls.RCB_judge:
+                dL=1e-24*cls.con.M_e*cls.con.T_0*dM*ST
+            else:
+                cls.RCB_judge=True 
+                cls.RCB=r 
+                dL=1e-24*cls.con.M_e*cls.con.T_0*dM*ST
         else:
             dL=0
         return [dP,dT,dM,dL]
@@ -50,6 +54,7 @@ class Methods(object):
         dG=DG
         ddG=6*G/r**2+((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/T**2)*dT)*dG
         dL=Lambda*7.15e-5*(dG**2+G**2/r**2)/(cls.sigma(P,T)*R_B)
+
         if dT==g*(T*dP/P):
             dL+=1e-24*cls.con.M_e*cls.con.T_0*dM*ST
         else:
