@@ -134,20 +134,20 @@ class Methods(object):
                 point2=(L_s+L_s*steps[1],cls.cal_ML_simple(ST,L_s+L_s*steps[1])[0])
                 k=cls.grad(point1,point2)
                 if k==0:
-                    raise ZeroDivisionError('k is zero.')
+                    raise ZeroDivisionError('k is zero.Error is M_c,M_p is {0}'.format(cls.con.M_p))
                 else:
                     L_s=(M_c_need-M_c)/k+L_s
                     if L_s<0:
-                        L_s=-L_s
+                        L_s=-L_s/10
                     M_c,L_c=cls.cal_ML_simple(ST,L_s)
             while abs(L_c_need-L_c)>error_L_c:
-                cls.error_judge=True
                 ST_next=ST+steps[0]
-                point2=cls.cal_L_safe(ST_next,L_s)
-                point1=[ST_next-steps[0],cls.cal_L_safe(ST_next-steps[0],L_s)[1]]
+                L_c_next=cls.cal_ML_simple(ST_next,L_s)[1]
+                point1=[ST,L_c]
+                point2=[ST_next,L_c_next]
                 k=cls.grad(point1,point2)
                 if k==0:
-                    raise ZeroDivisionError('k is zero.')
+                    raise ZeroDivisionError('k is zero.Error is L_c. M_p is {0}'.format(cls.con.M_p))
                 else:
                     ST=(L_c_need-L_c)/k+ST
                     ST,L_c=cls.cal_L_safe(ST,L_s)
@@ -187,14 +187,16 @@ class Calculator(object):
         self.me=Methods()
         self.g_in=0.0
     def cal_M_range(self,arange):
-        initial=[0.0,2.0]
+        initial=[0.0,1.0]
         for i in range(len(arange)):
             m=arange[i]
-            if m<5.1:
+            if m<5.3:
                 initial=[0.0,50.0]
+            else:
+                initial=[0.0,1.0]
             self.M_p.append(m)
             self.me.con.set_M_p(m)
-            self.ST.append(self.me.find_L_M([5.0,0],initial,[1e-8,1e-6],[1e-5,3e-3])[0][0])
+            self.ST.append(self.me.find_L_M([5.0,0.0],initial,[1e-8,1e-3],[1e-5,3e-3])[0][0])
             self.P.append(self.me.P)
             self.T.append(self.me.T)
             rho=[]
