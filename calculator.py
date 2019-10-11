@@ -18,8 +18,7 @@ class Methods(object):
     L=[]
     g=[]
     L_store=0
-    RCB_judge=False
-    RCB=0.0
+    RCB_index=0
 
     @classmethod
     def ode_fun(cls,Z,r,c_P,c_T,c_M,others,ST):
@@ -31,12 +30,8 @@ class Methods(object):
         dM=c_M*r**2*P/T
 
         if dT==g*(T*dP/P):
-            if cls.RCB_judge:
-                dL=1e-24*cls.con.M_e*cls.con.T_0*dM*ST
-            else:
-                cls.RCB_judge=True 
-                cls.RCB=r 
-                dL=1e-24*cls.con.M_e*cls.con.T_0*dM*ST
+            dL=1e-24*cls.con.M_e*cls.con.T_0*dM*ST
+
         else:
             dL=0
         return [dP,dT,dM,dL]
@@ -62,6 +57,16 @@ class Methods(object):
         return [dP,dT,dM,dG,ddG,dL]
 
     @classmethod
+    def find_RCB_index(cls):
+        P,T,M,L,r=cls.P,cls.T,cls.M,cls.L,cls.r 
+        judge=(cls.con.c_T*1e24*abs(L)*P**(cls.con.alpha+1)*T**(cls.con.beta-4)/M)<(np.ones(len(L))*cls.con.g_ad)
+        for i in range(len(judge)):
+            if judge[i]!=judge[0]:
+                cls.RCB_index=i
+                return i 
+        return 0
+
+    @classmethod
     def cal_ML_simple(cls,ST,L_s):
         c_P,c_T,c_M=cls.con.cal_const()
         g,alpha,beta=cls.con.g_ad,cls.con.alpha,cls.con.beta
@@ -76,6 +81,7 @@ class Methods(object):
         cls.P,cls.T,cls.M,cls.L=P,T,M,L
         cls.r=r
 
+        cls.find_RCB_index()
         return M[-1],L[-1]
 
     @classmethod
