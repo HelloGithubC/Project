@@ -17,6 +17,7 @@ class Methods(object):
     M=[]
     L=[]
     g=[]
+    r=[]
     L_store=0
     RCB_index=0
 
@@ -103,6 +104,8 @@ class Methods(object):
         cls.P,cls.T,cls.M,cls.L=P,T,M,L
         cls.r,cls.g=r,G
         cls.dg=dg
+
+        cls.find_RCB_index()
         return M[-1],L[-1],G[-1]
 
     @classmethod

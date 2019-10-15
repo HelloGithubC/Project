@@ -8,87 +8,86 @@ import numpy as np
 import matplotlib.pyplot as plt
 from calculator import Methods
 from scipy.integrate import odeint
-import warnings
-import sys
+from openpyxl import Workbook,load_workbook
 
 class Test(object):
     me=Methods()
     con=me.con
+    values=[]
+    dValues=[]
+    dr=0.0
+    num=800
     @classmethod
-    def test_range(cls,M_p,L_init,ST_range,plot=False):
-        """Use to test the range of ST.
-        Can ues plot to decide whether to plot.
-        Recommend to set a corrent L."""
-        cls.me.con.set_M_p(M_p)
-        M_c=cls.me.con.M_c
-        L=L_init
-        M=cls.me.cal_ML_simple(0,L)[0]
-        while abs(M-M_c)>0.001:
-            L_next=L+0.01
-            point1=[L,M]
-            point2=[L_next,cls.me.cal_ML_simple(0,L_next)[0]]
-            k=cls.me.grad(point1,point2)
-            if k==0:
-                raise ZeroDivisionError('k==0')
-            else:
-                L=(M_c-M)/k+L
-                M=cls.me.cal_ML_simple(0,L)[0]
-        L_result=[0]*len(ST_range)
-        for i in range(len(ST_range)):
-            try:
-                warnings.simplefilter('error')
-                L_result[i]=cls.me.cal_ML_simple(ST_range[i],L)[1]
-            except:
-                L_result[i]=-10
-                continue
-        if plot==True:
-            fig=plt.figure(dpi=100)
-            plt.plot(ST_range,L_result)
-            plt.show()
-        return L_result
-    
-    @classmethod
-    def ode_fun_test(cls,Z,r,c_P,c_T,c_M,others,ST,J):
-        P,T,M,L=Z
-        g,alpha,beta=others
-        if M<4.08:
-            print("M={0}".format(M))
-            pass
+    def ode_fun_B(cls,Z,r,c_P,c_T,c_M,others,ST):
+        P,T,M,G,DG,L=Z
+        cls.values.append([r,P,T,M,G,DG,L])
+        #if L<-1000:
+            #raise LOutOfRangeError('L<-1000')
+        g,alpha,beta,Lambda,R_B=others
 
         dP=c_P*M*P/(T*r**2)
-        dT=min(c_T*1e24*L*P**(alpha+1)*T**(beta-4)/M,g)*(T*dP/P)
-
+        dT=min(c_T*1e24*abs(L)*P**(alpha+1)*T**(beta-4)/M,g)*(T*dP/P)
         dM=c_M*r**2*P/T
-        
-        if T<0 or P<0:
-            print("T,P,L={0},{1},{2}".format(T,P,L))
-            print("dT,dP={0},{1}".format(dT,dP))
-            breakpoint()
-            raise ValueError('Error')
-        sigma=cls.con.sigma_1*T**(3./4.)*P**(-1./2.)*np.exp(-cls.con.sigma_2/T)
-        if dT==g*(T*dP/P):
-            dL=1e-24*cls.me.con.M_e*cls.me.con.T_0*dM*ST
-        else:
-            dL=0
+        dG=DG
+        ddG=6*G/r**2+((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/T**2)*dT)*dG
+        dL=Lambda*7.15e-5*(dG**2+G**2/r**2)/(cls.sigma(P,T)*R_B)
 
-        dL+=cls.me.con.R_B**3*r**2*J**2/sigma*1e-24
-        return [dP,dT,dM,dL]
-    
+        if dT==g*(T*dP/P):
+            dL+=1e-24*cls.con.M_e*cls.con.T_0*dM*ST
+        else:
+            dL+=0
+        cls.dValues.append([cls.dr,dP,dT,dM,dG,ddG,dL])
+        return [dP,dT,dM,dG,ddG,dL]
+
     @classmethod
-    def cal_ML_simple(cls,ST,L_s,J):
+    def find_RCB_index(cls):
+        P,T,M,L,r=cls.P,cls.T,cls.M,cls.L,cls.r 
+        judge=(cls.con.c_T*1e24*abs(L)*P**(cls.con.alpha+1)*T**(cls.con.beta-4)/M)<(np.ones(len(L))*cls.con.g_ad)
+        for i in range(len(judge)):
+            if judge[i]!=judge[0]:
+                cls.RCB_index=i
+                return i 
+        return 0
+
+    @classmethod
+    def cal_ML_simple_B(cls,ST,L_s,B=False,G=1e-12,dG=1e-15):
         c_P,c_T,c_M=cls.con.cal_const()
         g,alpha,beta=cls.con.g_ad,cls.con.alpha,cls.con.beta
         R_in,R_out=cls.con.R_p,cls.con.R_out
-        num=800
+        num=cls.num
 
         r=np.linspace(1,R_in/R_out,num)
-        initial=(1.,1.,cls.con.M_p,L_s)
-        others=(g,alpha,beta)
-        result=odeint(cls.ode_fun_test,initial,r,args=(c_P,c_T,c_M,others,ST,J))
-        P,T,M,L=result[:,0],result[:,1],result[:,2],result[:,3]
+        cls.dr=r[0]-r[1]
+        if B:
+            initial=(1.,1.,cls.con.M_p,G,dG,L_s)
+        else:
+            initial=(1.,1.,cls.con.M_p,0.0,0.0,L_s)
+        others=(g,alpha,beta,cls.con.Lambda,cls.con.R_B)
+        cls.test2=[]
+        result=odeint(cls.ode_fun_B,initial,r,args=(c_P,c_T,c_M,others,ST))
+        P,T,M,G,dg,L=result[:,0],result[:,1],result[:,2],result[:,3],result[:,4],result[:,5]
         cls.P,cls.T,cls.M,cls.L=P,T,M,L
-        cls.r=r
-        sigma=cls.con.sigma_1*T**(3./4.)*P**(-1./2.)*np.exp(-cls.con.sigma_2/T)
-        cls.sigma=sigma
+        cls.r,cls.g=r,G
+        cls.dg=dg
 
-        return M[-1],L[-1]
+        cls.find_RCB_index()
+        return M[-1],L[-1],G[-1]
+
+    @classmethod
+    def sigma(cls,P,T):
+        return cls.con.sigma_1*T**(3./4)*P**(-1./2)*np.exp(-cls.con.sigma_2/T)
+
+    @classmethod
+    def creat_test_data(cls,fileName='TestData.xlsx'):
+        wb=Workbook()
+        wb.create_sheet('result',index=0)
+        sheet=wb[wb.sheetnames[0]]
+        length=len(cls.values)
+        sheet.append(['Information: ','r_range=linspace({0},{1},{2})'.format(cls.values[0][0],cls.values[length-1][0], length),'M_c={0}M_e'.format(cls.con.M_e),'M_p={0}M_e'.format(cls.con.M_p),'a={0}AU'.format(cls.con.a)])
+        sheet.append(['r','P','T','M','G','DG','L'])
+        for i in range(len(cls.values)):
+            sheet.append(cls.values[i])
+        sheet.append(['dr','dP','dT','dM','dG','dDG','dL'])
+        for i in range(len(cls.values)):
+            sheet.append(cls.dValues[i])
+        wb.save(fileName)
