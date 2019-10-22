@@ -41,7 +41,7 @@ class Test(object):
 
     @classmethod
     def find_RCB_index(cls):
-        P,T,M,L,r=cls.P,cls.T,cls.M,cls.L,cls.r 
+        P,T,M,L=cls.P,cls.T,cls.M,cls.L
         judge=(cls.con.c_T*1e24*abs(L)*P**(cls.con.alpha+1)*T**(cls.con.beta-4)/M)<(np.ones(len(L))*cls.con.g_ad)
         for i in range(len(judge)):
             if judge[i]!=judge[0]:
@@ -51,6 +51,8 @@ class Test(object):
 
     @classmethod
     def cal_ML_simple_B(cls,ST,L_s,B=False,G=1e-12,dG=1e-15):
+        cls.values=[]
+        cls.dValues=[]
         c_P,c_T,c_M=cls.con.cal_const()
         g,alpha,beta=cls.con.g_ad,cls.con.alpha,cls.con.beta
         R_in,R_out=cls.con.R_p,cls.con.R_out
