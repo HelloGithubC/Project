@@ -29,13 +29,14 @@ class Test(object):
         dT=min(c_T*1e24*abs(L)*P**(alpha+1)*T**(beta-4)/M,g)*(T*dP/P)
         dM=c_M*r**2*P/T
         dG=DG
-        ddG=6*G/r**2+((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/T**2)*dT)*dG
         dL=Lambda*7.15e-5*(dG**2+G**2/r**2)/(cls.sigma(P,T)*R_B)
-
         if dT==g*(T*dP/P):
             dL+=1e-24*cls.con.M_e*cls.con.T_0*dM*ST
         else:
+            dT=0
             dL+=0
+        ddG=6*G/r**2+((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/T**2)*dT)*dG
+
         cls.dValues.append([cls.dr,dP,dT,dM,dG,ddG,dL])
         return [dP,dT,dM,dG,ddG,dL]
 
