@@ -17,22 +17,6 @@ def error(p,x,y):
 
 if __name__=='__main__':
     cal=Calculator()
-    cal.read_excel('Data.xlsx')
-    order=1
-    m=cal.M_p[order]
-    cal.me.con.set_M_p(m)
-    ST_max=cal.ST[order]
-    L_s=cal.L_init[order]
-    num=200
-
-    ST=ST_max*9/10
-    dG=np.linspace(0,1e-9,num)
-    g_in=np.ones(num)
-    for i in range(num):
-        g_in[i]=cal.me.cal_ML_simple_B(ST,L_s,True,1e-10,dG[i])[2]
-    p0=[-1,2.5]
-    para=leastsq(error,p0,args=(dG,g_in))
-    k,b=para[0] 
-    print(k,b)
-    print(-b/k)
-    
+    cal.me.con.a=0.1
+    M_p=np.linspace(5.2,12,200)
+    cal.creat_data(M_p,'Data3.xlsx','test.png')

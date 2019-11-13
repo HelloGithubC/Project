@@ -21,6 +21,8 @@ class Methods(object):
     L_store=0
     test_sigma=[]
     RCB_index=0
+    f=None 
+    f_judge=False
 
     @classmethod
     def ode_fun(cls,Z,r,c_P,c_T,c_M,others,ST):
@@ -49,7 +51,7 @@ class Methods(object):
         dT=min(c_T*1e24*abs(L)*P**(alpha+1)*T**(beta-4)/M,g)*(T*dP/P)
         dM=c_M*r**2*P/T
         dG=DG
-        ddG=6*G/r**2+((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/T**2)*dT)*dG
+        ddG=6*G/r**2+((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/T**2)*dT)*dG+(r<0.05)*2*cls.con.M_v*(1/r-0.01/r**3)*(G>0.0)
         #ddG=6*G/r**2-1/r*dG
         dL=Lambda*7.15e-5*(dG**2+G**2/r**2)/(cls.sigma(P,T)*R_B)
 
@@ -62,7 +64,7 @@ class Methods(object):
 
     @classmethod
     def find_RCB_index(cls):
-        P,T,M,L,r=cls.P,cls.T,cls.M,cls.L,cls.r 
+        P,T,M,L=cls.P,cls.T,cls.M,cls.L 
         judge=(cls.con.c_T*1e24*abs(L)*P**(cls.con.alpha+1)*T**(cls.con.beta-4)/M)<(np.ones(len(L))*cls.con.g_ad)
         for i in range(len(judge)):
             if judge[i]!=judge[0]:
@@ -115,7 +117,9 @@ class Methods(object):
     @classmethod
     def sigma(cls,P,T):
         return cls.con.sigma_1*T**(3./4)*P**(-1./2)*np.exp(-cls.con.sigma_2/T)
-          
+
+    @classmethod
+    def insertValue()  
     @classmethod
     def cal_L_safe(cls,ST,L_s):
         try:
