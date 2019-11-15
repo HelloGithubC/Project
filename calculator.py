@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import warnings
 from scipy.integrate import odeint
+from scipy import interpolate
 from openpyxl import Workbook,load_workbook
 
 class LOutOfRangeError(Exception):
@@ -51,7 +52,10 @@ class Methods(object):
         dT=min(c_T*1e24*abs(L)*P**(alpha+1)*T**(beta-4)/M,g)*(T*dP/P)
         dM=c_M*r**2*P/T
         dG=DG
-        ddG=6*G/r**2+((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/T**2)*dT)*dG+(r<0.05)*2*cls.con.M_v*(1/r-0.01/r**3)*(G>0.0)
+        if cls.f_judge and r>=cls.r[-1]:
+            ddG=6*G/r**2+cls.f(r)*dG+(r<0.95)*2*cls.con.M_v*(1/r-0.01/r**3)*(G>0.0)
+        else:
+            ddG=6*G/r**2+((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/T**2)*dT)*dG+(r<0.95)*2*cls.con.M_v*(1/r-0.01/r**3)*(G>0.0)
         #ddG=6*G/r**2-1/r*dG
         dL=Lambda*7.15e-5*(dG**2+G**2/r**2)/(cls.sigma(P,T)*R_B)
 
@@ -119,7 +123,16 @@ class Methods(object):
         return cls.con.sigma_1*T**(3./4)*P**(-1./2)*np.exp(-cls.con.sigma_2/T)
 
     @classmethod
-    def insertValue()  
+    def insert_value(cls):
+        dP=cls.con.c_P*cls.M*cls.P/(cls.T*cls.r**2)
+        nabla=np.ones(len(dP))
+        for i in range(len(nabla)):
+            nabla[i]=min(cls.con.c_T*1e24*abs(cls.L[i])*cls.P[i]**2*cls.T[i]**-3/cls.M[i],cls.con.g_ad)
+        dT=nabla*cls.T/cls.P*dP 
+        y=(-0.5*dP/cls.P)+(0.75/cls.T+cls.con.sigma_2/cls.T**2)*dT
+        cls.f=interpolate.interp1d(cls.r,y,kind='cubic')
+        cls.f_judge=True
+
     @classmethod
     def cal_L_safe(cls,ST,L_s):
         try:
