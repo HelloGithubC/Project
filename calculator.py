@@ -53,9 +53,9 @@ class Methods(object):
         dM=c_M*r**2*P/T
         dG=DG
         if cls.f_judge and r>=cls.r[-1]:
-            ddG=6*G/r**2+cls.f(r)*dG+(r<0.95)*2*cls.con.M_v*(1/r-0.01/r**3)*(G>0.0)
+            ddG=6*G/r**2+cls.f(r)*dG+(r>0.98)*2*cls.con.M_v*(1/r-0.98**2/r**3)/cls.con.c**2/cls.con.R_B
         else:
-            ddG=6*G/r**2+((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/T**2)*dT)*dG+(r<0.95)*2*cls.con.M_v*(1/r-0.01/r**3)*(G>0.0)
+            ddG=6*G/r**2+((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/T**2)*dT)*dG+(r>0.98)*2*cls.con.M_v*(1/r-0.98**2/r**3)/cls.con.c**2/cls.con.R_B
         #ddG=6*G/r**2-1/r*dG
         dL=Lambda*7.15e-5*(dG**2+G**2/r**2)/(cls.sigma(P,T)*R_B)
 
