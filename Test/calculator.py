@@ -53,17 +53,17 @@ class Methods(object):
         dT=min(c_T*1e24*abs(L)*P**(alpha+1)*T**(beta-4)/M,g)*(T*dP/P)
         dM=c_M*r**2*P/T
         dG=DG
+        #dL=Lambda*7.15e-5*(dG**2+G**2/r**2)/(cls.sigma(P,T)*R_B)
+        #ddG=6*G/r**2-1/r*dG
         if cls.f_judge and r>=cls.r[-1]:
             ddG=6*G/r**2+cls.f(r)*dG+(r>cls.con.depth)*2*cls.con.M_v*(1/r-cls.con.depth**2/r**3)/cls.con.c**2/cls.con.R_B
         else:
-            ddG=6*G/r**2+((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/(T*(1+1e-2))**2)*dT)*dG-(r>cls.con.depth)*2*cls.con.M_v*(1/r-cls.con.depth**2/r**3)/cls.con.c**2/cls.con.R_B
-        #ddG=6*G/r**2-1/r*dG
-        dL=Lambda*7.15e-5*(dG**2+G**2/r**2)/(cls.sigma(P,T)*R_B)
+            ddG=6*G/r**2+((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/T**2*dT)*dG-(r>cls.con.depth)*2*cls.con.M_v*(1/r-cls.con.depth**2/r**3)/cls.con.c**2/cls.con.R_B
 
         if dT==g*(T*dP/P):
-            dL+=1e-24*cls.con.M_e*cls.con.T_0*dM*ST
+            dL=1e-24*cls.con.M_e*cls.con.T_0*dM*ST
         else:
-            dL+=0
+            dL=Lambda*7.15e-5*(dG**2+G**2/r**2)/(cls.sigma(P,T)*R_B)
         cls.test_sigma.append((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/T**2)*dT)
         return [dP,dT,dM,dG,ddG,dL]
 
@@ -185,7 +185,7 @@ class Methods(object):
         return [[ST,L_s],[M_c,L_c]]
     
     @classmethod
-    def change_const(cls,new_const):
+    def change_Const(cls,new_const):
         cls.con=new_const
         
     @classmethod
