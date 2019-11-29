@@ -12,37 +12,31 @@ Created on Fri Jul 26 10:59:08 2019
 @author: 文明研究员
 """
 import numpy as np
-from calculator import Methods,ToAdjust
+from calculator import Methods,Calculator
 import matplotlib.pyplot as plt
-from test import Test
-import sys
+from mpl_toolkits.mplot3d import Axes3D
 
 if __name__=='__main__':
     me=Methods()
-    ST,L=2.46786405544956E-06,2.81916528606318
-    me.cal_ML_simple(ST,L)
-        
-    #fig=plt.figure(dpi=100)
-    #plt.loglog(me.r,me.L,'g-')
-    store1=[]
-    for i in range(len(me.r)):
-        store1.append([me.r[i],me.P[i],me.T[i],me.M[i],me.L[i],me.g[i],me.dg[i]])
+    #print(me.con.P_0)
 
-    while True:
-        try:
-            me.cal_ML_simple(ST,L,True)
-        except ToAdjust:
-            ST-=ST/10
-            print(ST,me.L_test)
-        else:
-            break
-    #me.cal_ML_simple(0.0,L,True)
-    print(ST)
-    store2=[]
-    for i in range(len(me.r)):
-        store2.append([me.r[i],me.P[i],me.T[i],me.M[i],me.L[i],me.g[i],me.dg[i]])
-    test=Test()
-    test.write_excel('Store.xlsx',store1,store2)
-   # plt.loglog(me.r,me.L,'r--')
-   # plt.savefig('test.png')
+    p=np.linspace(1,1e+4,1000)
+    t=np.linspace(1,100,1000)
+    P,T=np.meshgrid(p,t)
+    stepP=1
+    stepT=1e-3
+    sigma_0=me.sigma(P,T)
+    dP=(me.sigma(P+stepP,T)-sigma_0)/stepP/sigma_0
+    dT=(me.sigma(P,T+stepT)-sigma_0)/stepT/sigma_0
+
+    fig=plt.figure(dpi=300)
+    ax1=fig.add_subplot(221,projection='3d')
+    ax1.plot_surface(P,T,dP,cmap='rainbow')
+    ax2=fig.add_subplot(222,projection='3d')
+    ax2.plot_surface(P,T,dT,cmap='rainbow')
     
+    ax3=fig.add_subplot(223)
+    ax3.plot(T[:,300],dP[:,300])
+    ax4=fig.add_subplot(224)
+    ax4.plot(P[300],dT[300])
+    plt.show()

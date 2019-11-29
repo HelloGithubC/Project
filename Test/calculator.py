@@ -56,7 +56,7 @@ class Methods(object):
         if cls.f_judge and r>=cls.r[-1]:
             ddG=6*G/r**2+cls.f(r)*dG+(r>cls.con.depth)*2*cls.con.M_v*(1/r-cls.con.depth**2/r**3)/cls.con.c**2/cls.con.R_B
         else:
-            ddG=6*G/r**2+((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/T**2)*dT)*dG-(r>cls.con.depth)*2*cls.con.M_v*(1/r-cls.con.depth**2/r**3)/cls.con.c**2/cls.con.R_B
+            ddG=6*G/r**2+((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/(T*(1+1e-2))**2)*dT)*dG-(r>cls.con.depth)*2*cls.con.M_v*(1/r-cls.con.depth**2/r**3)/cls.con.c**2/cls.con.R_B
         #ddG=6*G/r**2-1/r*dG
         dL=Lambda*7.15e-5*(dG**2+G**2/r**2)/(cls.sigma(P,T)*R_B)
 
@@ -71,7 +71,7 @@ class Methods(object):
     def find_RCB_index(cls):
         P,T,M,L=cls.P,cls.T,cls.M,cls.L 
         judge=(cls.con.c_T*1e24*abs(L)*P**(cls.con.alpha+1)*T**(cls.con.beta-4)/M)<(np.ones(len(L))*cls.con.g_ad)
-        for i in range(len(judge)-1,0,-1):
+        for i in range(len(cls.r)):
             if judge[i]!=judge[0]:
                 cls.RCB_index=i
                 return i 
