@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "C:\\Users\\CulturalResearcher\\Miniconda3\\envs\\vscode\\python.exe",
+    "python.pythonPath": "/home/xiaoliang/miniconda3/envs/vscode/bin/python",
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true
 }
