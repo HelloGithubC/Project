@@ -1,5 +1,5 @@
 class Const:
-    def __init__(self):
+    def __init__(self,a=0.3):
         self.M_e=5.965e27 #g
         self.M_p=5.5  #/M_e
         self.M_c=5      #/M_e
@@ -8,7 +8,7 @@ class Const:
         self.c=3e+10
         self.depth=0.90
 
-        self.a=0.5 #/AU
+        self.a=a #/AU
         self.c_0=1e5*self.a**(-1/4)
         self.sigma=5.6704e-5 #erg/cm**2/s**1/K**4
         self.pi=3.14159
