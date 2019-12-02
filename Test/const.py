@@ -29,7 +29,7 @@ class Const:
         self.R_B=self.G*self.M_p*self.M_e/self.c_0**2
 		#R_out=min(R_H,R_B)
         self.R_out=self.R_B
-        self.M_v=8e+2*self.R_p**3
+        self.M_v=8e+2*self.R_B**3
         self.P_0=self.rho_0*self.R*self.T_0/self.mu
 		#calculate sigma
         self.sigma_1=9e9*906.4*(self.T_0/1002)**(5./4.)*(self.T_0/1500)**(
@@ -53,4 +53,5 @@ class Const:
         self.R_H=self.a*2e11*self.M_p**(1/3)
         self.R_B=self.G*self.M_p*self.M_e/self.c_0**2
         self.R_out=self.R_B
-        self.M_v=M_v*self.R_p**3
+        self.M_v=M_v*self.R_B**3
+        
