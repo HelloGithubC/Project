@@ -22,6 +22,7 @@ class Methods(object):
     r=[]
     L_store=0
     test_sigma=[]
+    test_values=[]
     RCB_index=0
     f=None 
     f_judge=False
@@ -58,8 +59,8 @@ class Methods(object):
         else:
             ddG=6*G/r**2+((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/T**2)*dT)*dG-(r>cls.con.depth)*2*cls.con.M_v*(1/r-cls.con.depth**2/r**3)/cls.con.c**2/cls.con.R_B
         #ddG=6*G/r**2-1/r*dG
-        #dL=Lambda*7.15e-5*(dG**2+G**2/r**2)/(cls.sigma(P,T)*R_B)
-        dL=0
+        dL=Lambda*7.15e-5*(dG**2+G**2/r**2)/(cls.sigma(P,T)*R_B)
+        cls.test_values.append(np.log(cls.sigma(P,T)))
 
         if dT==g*(T*dP/P):
             dL+=1e-24*cls.con.M_e*cls.con.T_0*dM*ST
@@ -105,6 +106,7 @@ class Methods(object):
 
         r=np.linspace(1,R_in/R_out,num)
         cls.test_sigma=[]
+        cls.test_values=[]
         if B:
             initial=(1.,1.,cls.con.M_p,G,dG,L_s)
         else:
