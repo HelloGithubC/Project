@@ -10,7 +10,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from const import Const
 from scipy.integrate import odeint
-class Test:
+
+class Test(object):
     def __init__(self):
         self.con=Const()
         self.con.depth=1.0
