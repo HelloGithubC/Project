@@ -7,6 +7,7 @@ Created on Wed Jun 12 17:13:24 2019
 import numpy as np 
 import matplotlib.pyplot as plt
 from calculator import Methods,Calculator
+from const import Const
 from scipy.optimize import leastsq
 
 def func(p,x):
@@ -17,6 +18,6 @@ def error(p,x,y):
 
 if __name__=='__main__':
     cal=Calculator()
-    cal.me.con.a=0.1
-    M_p=np.linspace(5.2,12,200)
-    cal.creat_data(M_p,'Data3.xlsx','test.png')
+    cal.me.change_const(Const(0.3))
+    M_p=np.linspace(5.15,12,200)
+    cal.creat_data(M_p,'Data2.xlsx','test.png')
