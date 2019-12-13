@@ -54,19 +54,15 @@ class Methods(object):
         dT=min(c_T*1e24*abs(L)*P**(alpha+1)*T**(beta-4)/M,g)*(T*dP/P)
         dM=c_M*r**2*P/T
         dG=DG
-        if cls.f_judge and r>=cls.r[-1]:
-            ddG=6*G/r**2+cls.f(r)*dG+(r>cls.con.depth)*2*cls.con.M_v*(1/r-cls.con.depth**2/r**3)/cls.con.c**2/cls.con.R_B
-        else:
-            ddG=6*G/r**2+((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/T**2)*dT)*dG-(r>cls.con.depth)*2*cls.con.M_v*(1/r-cls.con.depth**2/r**3)/cls.con.c**2/cls.con.R_B
+        control=(cls.con.sigma_2/T**2)*dT
+        ddG=6*G/r**2+((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/T**2*(abs(control)<10))*dT)*dG-(r>cls.con.depth)*2*cls.con.M_v*(1/r-cls.con.depth**2/r**3)/cls.con.c**2/cls.con.R_B
         #ddG=6*G/r**2-1/r*dG
         dL=Lambda*7.15e-5*(dG**2+G**2/r**2)/(cls.sigma(P,T)*R_B)
-        cls.test_values.append(np.log(cls.sigma(P,T)))
 
         if dT==g*(T*dP/P):
             dL+=1e-24*cls.con.M_e*cls.con.T_0*dM*ST
         else:
             dL+=0
-        cls.test_sigma.append((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/T**2)*dT)
         return [dP,dT,dM,dG,ddG,dL]
 
     @classmethod
@@ -225,7 +221,7 @@ class Calculator(object):
         for i in range(len(arange)):
             m=arange[i]
             if m<5.3:
-                initial=[0.0,50.0]
+                initial=[0.0,40.0]
             else:
                 initial=[0.0,1.0]
             self.M_p.append(m)
