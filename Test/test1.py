@@ -6,37 +6,35 @@ Created on Wed Jun  5 20:21:57 2019
 """
 import numpy as np
 import matplotlib.pyplot as plt
-from calculator import Methods
+from const import Const
 from scipy.integrate import odeint
 from openpyxl import Workbook,load_workbook
 from valueDataBase import DataBase
 
 class Test(object):
-    me=Methods()
-    con=me.con
+    con=Const(0.3)
     values=[]
     dValues=[]
     dr=0.0
-    num=800
+    num=1000
     f=[]
     @classmethod
     def ode_fun_B(cls,Z,r,c_P,c_T,c_M,others,ST):
         P,T,M,G,DG,L=Z
-        cls.values.append([r,P,T,M,G,DG,L])
         #if L<-1000:
             #raise LOutOfRangeError('L<-1000')
         g,alpha,beta,Lambda,R_B=others
 
         dP=c_P*M*P/(T*r**2)
+        P_0=cls.con.P_0
         dT=min(c_T*1e24*abs(L)*P**(alpha+1)*T**(beta-4)/M,g)*(T*dP/P)
         dM=c_M*r**2*P/T
         dG=DG
-        dL=Lambda*7.15e-5*(dG**2+G**2/r**2)/(cls.sigma(P,T)*R_B)
+        dL=Lambda*7.15e-5*(dG**2+G**2/r**2)/(9e9*10**cls.f(np.log10(P*P_0)-6)*R_B)
         if dT==g*(T*dP/P):
             dL+=1e-24*cls.con.M_e*cls.con.T_0*dM*ST
         else:
             dL+=0
-        P_0=cls.con.P_0
         ddG=6*G/r**2+(0.5*1e3*(cls.f(np.log10(P*P_0)-6+1e-3)-cls.f(np.log10(P*P_0)-6-1e-3))*dP/P)*dG+(r>cls.con.depth)*2*cls.con.M_v*(1/r-cls.con.depth**2/r**3)/cls.con.c**2/cls.con.R_B
 
         return [dP,dT,dM,dG,ddG,dL]
