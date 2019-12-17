@@ -32,10 +32,7 @@ class Test(object):
         dG=DG
         if P<=0.0:
             print("Error")
-        try:
-            dL=Lambda*7.15e-5*(dG**2+G**2/r**2)/(9e9*10**cls.f(np.log10(P*P_0)-6)*R_B)
-        except ValueError:
-            print("Error")
+        dL=Lambda*7.15e-5*(dG**2+G**2/r**2)/(9e9*10**cls.f(np.log10(P*P_0)-6)*R_B)
         if dT==g*(T*dP/P):
             dL+=1e-24*cls.con.M_e*cls.con.T_0*dM*ST
         else:
@@ -85,25 +82,39 @@ class Test(object):
         return cls.con.sigma_1*T**(3./4)*P**(-1./2)*np.exp(-cls.con.sigma_2/T)
 
     @classmethod
-    def find_L_simple(cls,targets, inits, steps, errors):
+    def find_ML_simple(cls,targets, inits, steps, errors):
         """The order of targets is [M_c, L_c], of inits is [ST, L_s](Note that the unit of L_s is 1e+24 erg/s), of steps and error is the same as inits and targets."""
         """The way to find the result is one-dimention Newton iteration. First adjustion is L_s and then is ST."""
         ST,L_s=inits
-        L_c_need=targets
-        error_L_c=errors
-        L_c=cls.cal_ML_simple_B(ST,L_s,True,0.0,-1)[1]
-        while abs(L_c_need-L_c)>error_L_c:
-            ST_next=ST+steps
-            L_c_next=cls.cal_ML_simple_B(ST_next,L_s,True,0.0,-1)[1]
-            point1=[ST,L_c]
-            point2=[ST_next,L_c_next]
-            k=cls.grad(point1,point2)
-            if k==0:
-                raise ZeroDivisionError('k is zero.Error is L_c. M_p is {0}'.format(cls.con.M_p))
-            else:
-                ST=(L_c_need-L_c)/k+ST
-                L_c=cls.cal_ML_simple_B(ST,L_s,True,0.0,-1)[1]
-        return ST,L_c
+        M_c_need,L_c_need=targets
+        error_M_c, error_L_c=errors
+        M_c,L_c=cls.cal_ML_simple_B(ST,L_s,True,0.0,-1)[0:2]
+        while abs(M_c-M_c_need)>error_M_c or abs(L_c-L_c_need)>error_L_c:
+            while abs(M_c-M_c_need)>error_M_c:
+                point1=(L_s,M_c)
+                point2=(L_s+L_s*steps[1],cls.cal_ML_simple_B(ST,L_s+L_s*steps[1],True,0.0,-1)[0])
+                k=cls.grad(point1,point2)
+                if k==0:
+                    raise ZeroDivisionError('k is zero.Error is M_c,M_p is {0}'.format(cls.con.M_p))
+                else:
+                    L_s=(M_c_need-M_c)/k+L_s
+                    if L_s<0:
+                        L_s=-L_s/10
+                    M_c,L_c=cls.cal_ML_simple_B(ST,L_s,True,0.0,-1)[0:2]
+            print(M_c,L_c)
+            while abs(L_c_need-L_c)>error_L_c:
+                ST_next=ST+steps
+                L_c_next=cls.cal_ML_simple_B(ST_next,L_s,True,0.0,-1)[1]
+                point1=[ST,L_c]
+                point2=[ST_next,L_c_next]
+                k=cls.grad(point1,point2)
+                if k==0:
+                    raise ZeroDivisionError('k is zero.Error is L_c. M_p is {0}'.format(cls.con.M_p))
+                else:
+                    ST=(L_c_need-L_c)/k+ST
+                    L_c=cls.cal_ML_simple_B(ST,L_s,True,0.0,-1)[1]
+            print(M_c,L_c)
+        return ST,L_s
 
     @classmethod
     def grad(cls,point1,point2):
@@ -134,7 +145,7 @@ class Test(object):
         L=np.ones(len(M_p))
         for order in range(len(M_p)):
             cls.con.set_M_p(M_p[order])
-            ST[order]=cls.find_L_simple(0.0,[ST[order],L_s[order]],1e-7,1e-3)[0]
+            ST[order]=cls.find_ML_simple(0.0,[ST[order],L_s[order]],1e-7,1e-3)[0]
             print("Finished: {0}/200".format(order))
             P[order]=cls.P[-1]
             T[order]=cls.T[-1]

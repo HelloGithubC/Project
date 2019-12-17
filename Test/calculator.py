@@ -108,8 +108,7 @@ class Methods(object):
         else:
             initial=(1.,1.,cls.con.M_p,0.0,0.0,L_s)
         others=(g,alpha,beta,cls.con.Lambda,cls.con.R_B)
-        cls.test2=[]
-        result=odeint(cls.ode_fun_B,initial,r,args=(c_P,c_T,c_M,others,ST),rtol=1e-10,atol=1e-10)
+        result=odeint(cls.ode_fun_B,initial,r,args=(c_P,c_T,c_M,others,ST))
         P,T,M,G,dg,L=result[:,0],result[:,1],result[:,2],result[:,3],result[:,4],result[:,5]
         cls.P,cls.T,cls.M,cls.L=P,T,M,L
         cls.r,cls.g=r,G
@@ -182,6 +181,27 @@ class Methods(object):
                     ST=(L_c_need-L_c)/k+ST
                     ST,L_c=cls.cal_L_safe(ST,L_s)
         return [[ST,L_s],[M_c,L_c]]
+
+    @classmethod
+    def find_L_simple(cls,targets, inits, steps, errors):
+        """The order of targets is [M_c, L_c], of inits is [ST, L_s](Note that the unit of L_s is 1e+24 erg/s), of steps and error is the same as inits and targets."""
+        """The way to find the result is one-dimention Newton iteration. First adjustion is L_s and then is ST."""
+        ST,L_s=inits
+        L_c_need=targets
+        error_L_c=errors
+        L_c=cls.cal_ML_simple_B(ST,L_s,True,0.0,-1)[1]
+        while abs(L_c_need-L_c)>error_L_c:
+            ST_next=ST+steps
+            L_c_next=cls.cal_ML_simple_B(ST_next,L_s,True,0.0,-1)[1]
+            point1=[ST,L_c]
+            point2=[ST_next,L_c_next]
+            k=cls.grad(point1,point2)
+            if k==0:
+                raise ZeroDivisionError('k is zero.Error is L_c. M_p is {0}'.format(cls.con.M_p))
+            else:
+                ST=(L_c_need-L_c)/k+ST
+                L_c=cls.cal_ML_simple_B(ST,L_s,True,0.0,-1)[1]
+        return ST,L_c
     
     @classmethod
     def change_const(cls,new_const):
