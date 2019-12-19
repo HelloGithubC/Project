@@ -48,7 +48,7 @@ class Const:
         self.c_P=-(self.rho_0/(self.P_0*self.R_B))*self.G*self.M_e
         return [self.c_P,self.c_T,self.c_M]
 
-    def set_M_p(self,M_p,M_v=8e+2):
+    def set_M_p(self,M_p,M_v=8e+5):
         self.M_p=M_p
         self.R_H=self.a*2e11*self.M_p**(1/3)
         self.R_B=self.G*self.M_p*self.M_e/self.c_0**2

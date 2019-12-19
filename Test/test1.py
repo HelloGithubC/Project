@@ -138,6 +138,7 @@ class Test(object):
             print("Finished: {0}/200".format(order))
             P[order]=cls.P[-1]
             T[order]=cls.T[-1]
+            print("P,T are {0},{1}".format(P[order],T[order]))
             L[order]=cls.L[0]
         cls.ST=ST
         cls.t=np.ones(len(M_p))
