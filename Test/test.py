@@ -14,4 +14,4 @@ if __name__ == '__main__':
     te.creat_t([M_p,ST,L_s],test_start=0)"""
 
     te=Test()
-    te.find_L(0)
+    te.find_L(39)
