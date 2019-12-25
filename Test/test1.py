@@ -10,6 +10,7 @@ from const import Const
 from scipy.integrate import odeint
 from openpyxl import Workbook,load_workbook
 from valueDataBase import DataBase
+from calculator import Calculator
 
 class Test(object):
     con=Const(0.3)
@@ -91,10 +92,12 @@ class Test(object):
         ST,L_s=inits
         L_c_need=targets
         error_L_c=errors
-        L_c=cls.cal_ML_simple_B(ST,L_s,True,0.0,-1)[1]
+        L_c=cls.cal_ML_simple_B(ST,L_s,True,0.0,-1000)[1]
+        i=1
         while abs(L_c_need-L_c)>error_L_c:
-            ST_next=ST+steps
-            L_c_next=cls.cal_ML_simple_B(ST_next,L_s,True,0.0,-1)[1]
+            ST_next=ST+steps/(2*i)
+            i+=1
+            L_c_next=cls.cal_ML_simple_B(ST_next,L_s,True,0.0,-1000)[1]
             point1=[ST,L_c]
             point2=[ST_next,L_c_next]
             k=cls.grad(point1,point2)
@@ -102,7 +105,7 @@ class Test(object):
                 raise ZeroDivisionError('k is zero.Error is L_c. M_p is {0}'.format(cls.con.M_p))
             else:
                 ST=(L_c_need-L_c)/k+ST
-                L_c=cls.cal_ML_simple_B(ST,L_s,True,0.0,-1)[1]
+                L_c=cls.cal_ML_simple_B(ST,L_s,True,0.0,-1000)[1]
         return ST,L_c
 
     @classmethod
@@ -126,15 +129,15 @@ class Test(object):
         wb.save(fileName)
 
     @classmethod
-    def creat_t(cls,initValues,fileName='TestT.xlsx'):
+    def creat_t(cls,initValues,fileName='TestT.xlsx',test_start=0):
         """The order of initValues is M_p, ST, L_s"""
         M_p,ST,L_s=initValues
-        P=np.ones(len(M_p))
-        T=np.ones(len(M_p))
-        L=np.ones(len(M_p))
-        for order in range(len(M_p)):
+        P=np.ones(len(M_p)-test_start)
+        T=np.ones(len(M_p)-test_start)
+        L=np.ones(len(M_p)-test_start)
+        for order in range(test_start,len(M_p)):
             cls.con.set_M_p(M_p[order])
-            ST[order]=cls.find_L_simple(0.0,[ST[order],L_s[order]],1e-7,1e-3)[0]
+            ST[order]=cls.find_L_simple(0.0,[ST[order],L_s[order]],1e-7,1e-5)[0]
             print("Finished: {0}/200".format(order))
             P[order]=cls.P[-1]
             T[order]=cls.T[-1]
@@ -163,3 +166,31 @@ class Test(object):
         for i in range(len(M_p)):
             sheet.append([M_p[i],cls.ST[i],cls.L[i],cls.t[i]])
         wb.save(fileName)
+
+    @classmethod
+    def find_L(cls,test_start=0):
+        cal=Calculator()
+        cal.read_excel('Data2.xlsx')
+        length=200
+        P=np.ones(length-test_start)
+        T=np.ones(length-test_start)
+        L=np.ones(length-test_start)
+        a=open('store.txt','a',encoding='utf-8')
+        a.write("order,P,T,L,ST\n")
+        a.close()
+        for order in range(test_start,length):
+            a=open('store.txt','a',encoding='utf-8')
+            ST=cal.ST[order]
+            L_s=cal.L_init[order]
+            cls.con.set_M_p(cal.M_p[order])
+            ST=cls.find_L_simple(0.0,[ST,L_s],1e-6,1e-5)[0]
+            print("Finished: {0}/200".format(order))
+            P[order]=cls.P[-1]
+            T[order]=cls.T[-1]
+            print("P,T are {0},{1}".format(P[order],T[order]))
+            L[order]=cls.L[0]
+            a.write("{0}:{1},{2},{3},{4}\n".format(order,P[order],T[order],L[order],ST))
+            a.close()
+
+
+        
