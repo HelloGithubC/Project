@@ -18,9 +18,11 @@ class Methods(object):
     M=[]
     L=[]
     g=[]
+    dg=[]
     r=[]
     L_store=0
     test_sigma=[]
+    test_values=[]
     RCB_index=0
     f=None 
     f_judge=False
@@ -52,10 +54,8 @@ class Methods(object):
         dT=min(c_T*1e24*abs(L)*P**(alpha+1)*T**(beta-4)/M,g)*(T*dP/P)
         dM=c_M*r**2*P/T
         dG=DG
-        if cls.f_judge and r>=cls.r[-1]:
-            ddG=6*G/r**2+cls.f(r)*dG+(r>0.98)*2*cls.con.M_v*(1/r-0.98**2/r**3)/cls.con.c**2/cls.con.R_B
-        else:
-            ddG=6*G/r**2+((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/T**2)*dT)*dG+(r>0.98)*2*cls.con.M_v*(1/r-0.98**2/r**3)/cls.con.c**2/cls.con.R_B
+        control=(cls.con.sigma_2/T**2)*dT
+        ddG=6*G/r**2+((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/T**2*(abs(control)<10))*dT)*dG-(r>cls.con.depth)*2*cls.con.M_v*(1/r-cls.con.depth**2/r**3)/cls.con.c**2/cls.con.R_B
         #ddG=6*G/r**2-1/r*dG
         dL=Lambda*7.15e-5*(dG**2+G**2/r**2)/(cls.sigma(P,T)*R_B)
 
@@ -63,14 +63,13 @@ class Methods(object):
             dL+=1e-24*cls.con.M_e*cls.con.T_0*dM*ST
         else:
             dL+=0
-        cls.test_sigma.append((-0.5*dP/P)+(0.75/T+cls.con.sigma_2/T**2)*dT)
         return [dP,dT,dM,dG,ddG,dL]
 
     @classmethod
     def find_RCB_index(cls):
         P,T,M,L=cls.P,cls.T,cls.M,cls.L 
         judge=(cls.con.c_T*1e24*abs(L)*P**(cls.con.alpha+1)*T**(cls.con.beta-4)/M)<(np.ones(len(L))*cls.con.g_ad)
-        for i in range(len(judge)):
+        for i in range(len(cls.r)):
             if judge[i]!=judge[0]:
                 cls.RCB_index=i
                 return i 
@@ -81,7 +80,7 @@ class Methods(object):
         c_P,c_T,c_M=cls.con.cal_const()
         g,alpha,beta=cls.con.g_ad,cls.con.alpha,cls.con.beta
         R_in,R_out=cls.con.R_p,cls.con.R_out
-        num=800
+        num=5000
 
         r=np.linspace(1,R_in/R_out,num)
         initial=(1.,1.,cls.con.M_p,L_s)
@@ -99,17 +98,18 @@ class Methods(object):
         c_P,c_T,c_M=cls.con.cal_const()
         g,alpha,beta=cls.con.g_ad,cls.con.alpha,cls.con.beta
         R_in,R_out=cls.con.R_p,cls.con.R_out
-        num=800
+        num=5000
 
         r=np.linspace(1,R_in/R_out,num)
         cls.test_sigma=[]
+        cls.test_values=[]
         if B:
             initial=(1.,1.,cls.con.M_p,G,dG,L_s)
         else:
             initial=(1.,1.,cls.con.M_p,0.0,0.0,L_s)
         others=(g,alpha,beta,cls.con.Lambda,cls.con.R_B)
         cls.test2=[]
-        result=odeint(cls.ode_fun_B,initial,r,args=(c_P,c_T,c_M,others,ST))
+        result=odeint(cls.ode_fun_B,initial,r,args=(c_P,c_T,c_M,others,ST),rtol=1e-10,atol=1e-10)
         P,T,M,G,dg,L=result[:,0],result[:,1],result[:,2],result[:,3],result[:,4],result[:,5]
         cls.P,cls.T,cls.M,cls.L=P,T,M,L
         cls.r,cls.g=r,G
@@ -221,7 +221,7 @@ class Calculator(object):
         for i in range(len(arange)):
             m=arange[i]
             if m<5.3:
-                initial=[0.0,50.0]
+                initial=[0.0,40.0]
             else:
                 initial=[0.0,1.0]
             self.M_p.append(m)
@@ -314,7 +314,4 @@ class Calculator(object):
             self.ST.append(data[1].value)
             self.L_init.append(data[2].value)
             self.t.append(data[3].value)
-        
-        
-            
 
