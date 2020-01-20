@@ -109,14 +109,16 @@ class Test(object):
         return ST,L_c
 
     @classmethod
-    def find_L_two(cls,targets,L_s, left,right,errors,p=False):
+    def find_L_two(cls,targets,L_s, left,right,errors,p=False,maxTimes=20):
         ST_left=left
         ST_right=right 
         ST=(ST_right+ST_left)/2
         L_c_need=targets
         error_L_c=errors
         L_c=cls.cal_ML_simple_B(ST,L_s,True,0.0,-3e+3)[1]
+        i=0
         while abs(L_c_need-L_c)>error_L_c:
+            i+=1
             if L_c>0.0:
                 ST_left=ST
             else:
@@ -125,6 +127,8 @@ class Test(object):
             L_c=cls.cal_ML_simple_B(ST,L_s,True,0.0,-3e+3)[1]
             if p:
                 print(L_c)
+            if i>maxTimes:
+                break
         return ST,L_c
             
     @classmethod
