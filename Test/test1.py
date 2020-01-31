@@ -11,6 +11,7 @@ from scipy.integrate import odeint
 from openpyxl import Workbook,load_workbook
 from valueDataBase import DataBase
 from calculator import Calculator
+import pdb
 
 class Test(object):
     con=Const(0.3)
@@ -42,7 +43,11 @@ class Test(object):
         else:
             dL+=0
         ddG=6*G/r**2+(0.5*1e3*(cls.f(np.log10(P*P_0)-6+1e-3)-cls.f(np.log10(P*P_0)-6-1e-3))*dP/P)*dG+(r>cls.con.depth)*2*cls.con.M_v*(1/r-cls.con.depth**2/r**3)/cls.con.c**2/cls.con.R_B
-
+        
+        cls.values.append([P,T,M,G,L])
+        #if dL>100:
+            #pdb.set_trace()
+        cls.dValues.append([dP,dT,dM,dG,ddG,dL])
         return [dP,dT,dM,dG,ddG,dL]
 
     @classmethod
@@ -57,6 +62,8 @@ class Test(object):
 
     @classmethod
     def cal_ML_simple_B(cls,ST,L_s,B=False,G=1e-12,dG=1e-15):
+        cls.values=[]
+        cls.dValues=[]
         c_P,c_T,c_M=cls.con.cal_const()
         g,alpha,beta=cls.con.g_ad,cls.con.alpha,cls.con.beta
         R_in,R_out=cls.con.R_p,cls.con.R_out
