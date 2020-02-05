@@ -1,8 +1,8 @@
 class Const:
-    def __init__(self,a=0.3):
+    def __init__(self,a=0.3,M_c=5):
         self.M_e=5.965e27 #g
         self.M_p=5.5  #/M_e
-        self.M_c=5      #/M_e
+        self.M_c=M_c      #/M_e
         self.G=6.674e-8   #erg*cm**2/g**2
         self.Myr=3.156e13
         self.c=3e+10
