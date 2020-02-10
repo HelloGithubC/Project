@@ -318,7 +318,7 @@ class Calculator(object):
             sheet.append([arange[i],self.ST[i],self.L[i][0],self.t[i]])
         wb.save(filename)
     def read_excel(self,filename,sheetname='result'):
-        wb=load_workbook(filename)
+        wb=load_workbook(filename,data_only=True)
         sheet=wb[sheetname]
         row_max=sheet.max_row
         message=[]
@@ -326,12 +326,12 @@ class Calculator(object):
         self.ST=[]
         self.L_init=[]
         self.t=[]
-        for i in range(2,row_max,1):
+        for i in range(1,row_max,1):
             message.append(list(sheet.rows)[i])
         for i in range(len(message)):
             data=list(message[i])
-            self.M_p.append(data[0].value)
-            self.ST.append(data[1].value)
-            self.L_init.append(data[2].value)
-            self.t.append(data[3].value)
+            self.M_p.append(data[5].value)
+            self.ST.append(data[4].value)
+            self.L_init.append(data[3].value)
+            self.t.append(data[9].value)
 
