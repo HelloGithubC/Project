@@ -168,7 +168,7 @@ class Test(object):
             ST=(ST_right+ST_left)/2
             L_c=self.cal_ML_simple_B(ST,L_s,True,0.0,gt)[1]
             if p:
-                print(L_c)
+                print(ST,L_c)
             if i>maxTimes:
                 break
         return ST,L_c
