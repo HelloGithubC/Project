@@ -82,7 +82,7 @@ class Test(object):
         c_P,c_T,c_M=self.con.cal_const()
         g,alpha,beta=self.con.g_ad,self.con.alpha,self.con.beta
         R_in,R_out=self.con.R_p,self.con.R_out
-        num=5000
+        num=self.num
 
         r=np.linspace(1,R_in/R_out,num)
         initial=(1.,1.,self.con.M_p,L_s)
